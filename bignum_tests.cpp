@@ -156,6 +156,18 @@ void test_extended_binary_euclidean() {
 	}
 }
 
+void test_large_01() {
+	typedef BigNum<0x100000000llu, 686+1, 6617> MyBigNum;
+	MyBigNum n, a, b, x, y, gcd;
+	n = 2000; a = n.pow(2000);
+	n = 1999; b = n.pow(1999);
+	MyBigNum::extended_binary_euclidean(a, b, &x, &y, &gcd);
+	//printf("x = "); x.printd(); printf("\n");
+	//printf("y = "); y.printd(); printf("\n");
+	//printf("gcd = "); gcd.printd(); printf("\n");
+	assert(gcd == 1);
+}
+
 void suite() {
 	test_assign();
 	test_add();
@@ -165,6 +177,7 @@ void suite() {
 	test_pow();
 	test_sqrt();
 	test_extended_binary_euclidean();
+	test_large_01();
 }
 
 int main() {
