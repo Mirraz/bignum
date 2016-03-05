@@ -235,6 +235,48 @@ public:
 		return (*this) * num_b;
 	}
 	
+	BigNum operator-(const BigNum &b) const {
+		assert(b.len <= len);
+		BigNum result(0);
+		if (len == 0) return result;
+		operation_type carry = 0;
+		operation_type subtr;
+		len_type i;
+		for (i=0; i<b.len; ++i) {
+			subtr = (operation_type)b.digits[i] + carry;
+			if ((operation_type)digits[i] >= subtr) {
+				result.digits[i] = (operation_type)digits[i] - subtr;
+				carry = 0;
+			} else {
+				result.digits[i] = (operation_type)digits[i] + (BASE - subtr);
+				carry = 1;
+			}
+		}
+		for (; i<len && carry > 0; ++i) {
+			if ((operation_type)digits[i] >= carry) {
+				result.digits[i] = (operation_type)digits[i] - carry;
+				carry = 0;
+			} else {
+				result.digits[i] = (operation_type)digits[i] + (BASE - carry);
+				carry = 1;
+			}
+		}
+		for (; i<len; ++i) {
+			result.digits[i] = digits[i];
+		}
+		assert(carry == 0);
+		assert(i > 0);
+		if (result.digits[i-1] == 0) --i;
+		result.len = i;
+		return result;
+	}
+	
+	// b may be > BASE
+	BigNum operator-(const operation_type b) const {
+		BigNum num_b(b);
+		return (*this) - num_b;
+	}
+	
 	BigNum div(const digit_type b, digit_type *denom) const {
 		assert(b < BASE);
 		assert(b > 0);

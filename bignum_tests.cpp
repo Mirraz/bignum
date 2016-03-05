@@ -50,6 +50,24 @@ void test_mul() {
 	}
 }
 
+void test_sub() {
+	unsigned int i, j, k, l;
+	BigNum<10, 2, 2> a, b, c, d;
+	for (i=0; i<=99; ++i) {
+		for (j=0; j<=99; ++j) {
+			if (i < j) continue;
+			a = i;
+			b = j;
+			c = a - j;
+			d = a - b;
+			k = c.value();
+			l = d.value();
+			assert(k == i - j);
+			assert(l == i - j);
+		}
+	}
+}
+
 void test_div() {
 	unsigned int i, j, k, l;
 	digit_type denom;
@@ -85,6 +103,7 @@ void suite() {
 	test_assign();
 	test_add();
 	test_mul();
+	test_sub();
 	test_div();
 	test_sqrt();
 }
