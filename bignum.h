@@ -269,34 +269,41 @@ public:
 		BigNum result(0);
 		if (len == 0) return result;
 		operation_type carry = 0;
-		operation_type subtr;
-		len_type i;
+		operation_type subtr, res;
+		len_type i, j = 0;
 		for (i=0; i<b.len; ++i) {
 			subtr = (operation_type)b.digits[i] + carry;
 			if ((operation_type)digits[i] >= subtr) {
-				result.digits[i] = (operation_type)digits[i] - subtr;
+				res = (operation_type)digits[i] - subtr;
 				carry = 0;
 			} else {
-				result.digits[i] = (operation_type)digits[i] + (BASE - subtr);
+				res = (operation_type)digits[i] + (BASE - subtr);
 				carry = 1;
 			}
+			if (res > 0) j = i + 1;
+			result.digits[i] = res;
 		}
 		for (; i<len && carry > 0; ++i) {
 			if ((operation_type)digits[i] >= carry) {
-				result.digits[i] = (operation_type)digits[i] - carry;
+				res = (operation_type)digits[i] - carry;
 				carry = 0;
+				if (res > 0) j = i + 1;
 			} else {
-				result.digits[i] = (operation_type)digits[i] + (BASE - carry);
+				res = (operation_type)digits[i] + (BASE - carry);
 				carry = 1;
+				j = i + 1;
 			}
+			result.digits[i] = res;
 		}
-		for (; i<len; ++i) {
-			result.digits[i] = digits[i];
+		if (i < len) {
+			for (; i<len; ++i) {
+				result.digits[i] = digits[i];
+			}
+			j = len;
 		}
 		assert(carry == 0);
 		assert(i > 0);
-		if (result.digits[i-1] == 0) --i;
-		result.len = i;
+		result.len = j;
 		return result;
 	}
 	

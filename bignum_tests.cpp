@@ -52,18 +52,20 @@ void test_mul() {
 
 void test_sub() {
 	unsigned int i, j, k, l;
-	BigNum<10, 2, 2> a, b, c, d;
+	BigNum<10, 2, 2> a, b, c, d, e;
 	for (i=0; i<=99; ++i) {
 		for (j=0; j<=99; ++j) {
 			if (i < j) continue;
 			a = i;
 			b = j;
 			c = a - j;
-			d = a - b;
 			k = c.value();
-			l = d.value();
 			assert(k == i - j);
+			d = a - b;
+			l = d.value();
 			assert(l == i - j);
+			e = i - j;
+			assert(d == e);
 		}
 	}
 }
