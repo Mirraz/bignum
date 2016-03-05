@@ -88,6 +88,40 @@ void test_div() {
 	}
 }
 
+int my_pow(const uint_fast64_t base, uint_fast8_t exp, uint_fast64_t *power) {
+	uint_fast64_t result = 1;
+	uint_fast8_t mask = 1;
+	while (mask <= exp) mask <<= 1; // XXX my overflow
+	mask >>= 1;
+	while (mask > 0) {
+		if (result > UINT32_MAX) return 1;
+		result *= result;
+		if (mask & exp) {
+			//if (result > ceil(UINT64_MAX / base)) return 1;
+			if (base > 0 && result > ((UINT64_MAX - 1) / base) + 1) return 1;
+			result *= base;
+		}
+		mask >>= 1;
+	}
+	*power = result;
+	return 0;
+}
+
+void test_pow() {
+	uint_fast64_t i, j, k, l;
+	BigNum<16, 16, 19> a, b;
+	for (i=0; i<1024*64; ++i) {
+		for (j=0; j<64; ++j) {
+			if (i == 0 && j == 0) continue;
+			if (my_pow(i, j, &k)) continue;
+			a = i;
+			b = a.pow(j);
+			l = b.value();
+			assert(l == k);
+		}
+	}
+}
+
 void test_sqrt() {
 	unsigned int i, j, k;
 	typedef BigNum<10, 4, 4> MyBigNum;
@@ -128,6 +162,7 @@ void suite() {
 	test_mul();
 	test_sub();
 	test_div();
+	test_pow();
 	test_sqrt();
 	test_extended_binary_euclidean();
 }

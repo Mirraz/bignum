@@ -432,6 +432,25 @@ public:
 		return (len != 0 && (digits[0] & 1));
 	}
 	
+	BigNum pow(const len_type exp) const {
+		assert(len > 0 || exp > 0); // forbid 0^0
+		BigNum result(1);
+		len_type mask = 1;
+		while (mask <= exp) {
+			mask <<= 1;
+			assert(mask > 0); // detect overflow
+		}
+		mask >>= 1;
+		while (mask > 0) {
+			result *= result;
+			if (mask & exp) {
+				result *= (*this);
+			}
+			mask >>= 1;
+		}
+		return result;
+	}
+	
 	static BigNum square_root(const BigNum &n) {
 		assert(n.len <= MAX_LEN - 1);
 		if (n.len == 0) return 0;
