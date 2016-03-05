@@ -47,7 +47,7 @@ public:
 	
 	BigNum(const BigNum &b) : BigNum(b.len, b.digits) {}
 	
-	digit_type value() const {
+	operation_type value() const {
 		if (len == 0) return 0;
 		operation_type n = 0;
 		for (len_type i=len-1;; --i) {
