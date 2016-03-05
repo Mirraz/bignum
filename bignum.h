@@ -131,6 +131,20 @@ public:
 		return 0 >= b; // if (len == 0)
 	}
 	
+	bool operator ==(const digit_type b) const {
+		assert(b < BASE);
+		if (len > 1) return false;
+		if (len == 1) return digits[0] == b;
+		return 0 == b; // if (len == 0)
+	}
+	
+	bool operator !=(const digit_type b) const {
+		assert(b < BASE);
+		if (len > 1) return true;
+		if (len == 1) return digits[0] != b;
+		return 0 != b; // if (len == 0)
+	}
+	
 	bool operator <(const BigNum &b) const {
 		if (len != b.len) return len < b.len;
 		if (len == 0) return false;
@@ -171,6 +185,22 @@ public:
 			if (digits[i] < b.digits[i]) return false;
 			if (digits[i] > b.digits[i]) return true;
 			if (i == 0) break;
+		}
+		return true;
+	}
+	
+	bool operator ==(const BigNum &b) const {
+		if (len != b.len) return false;
+		for (len_type i=0; i<len; ++i) {
+			if (digits[i] != b.digits[i]) return false;
+		}
+		return true;
+	}
+	
+	bool operator !=(const BigNum &b) const {
+		if (len != b.len) return true;
+		for (len_type i=0; i<len; ++i) {
+			if (digits[i] == b.digits[i]) return false;
 		}
 		return true;
 	}
