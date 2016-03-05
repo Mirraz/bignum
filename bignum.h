@@ -1,0 +1,326 @@
+#ifndef BIGNUM_H
+#define BIGNUM_H
+
+#include <stdio.h>
+#include <stdint.h>
+#ifndef NDEBUG
+#  include <inttypes.h>
+#endif
+#include <math.h>
+
+typedef uint_fast16_t len_type;
+typedef uint32_t      digit_type;
+typedef uint_fast64_t operation_type;
+typedef uint_fast16_t dec_len_type;
+typedef uint8_t       dec_digit_type;
+#ifndef NDEBUG
+#  define LEN_PRINT "%" PRIuFAST16
+#  define DIGIT_PRINT "%" PRIu32
+#endif
+
+template<operation_type BASE, len_type MAX_LEN, dec_len_type MAX_DECIMAL_LEN>
+class BigNum {
+	static_assert(BASE <= UINT32_MAX, "BASE is too large");
+	static_assert(MAX_LEN < UINT_FAST16_MAX, "MAX_LEN is too large");
+	
+private:
+	len_type len;
+	digit_type digits[MAX_LEN];
+	
+public:
+	BigNum() : len(0) {}
+	
+	// n may be > BASE
+	BigNum(operation_type n) {
+		len_type i = 0;
+		while (n > 0) {
+			assert(i < MAX_LEN);
+			digits[i++] = n % BASE;
+			n /= BASE;
+		}
+		len = i;
+	}
+	
+	BigNum(const len_type b_len, const digit_type b_digits[]) : len(b_len) {
+		for (len_type i=0; i<b_len; ++i) digits[i] = b_digits[i];
+	}
+	
+	BigNum(const BigNum &b) : BigNum(b.len, b.digits) {}
+	
+	digit_type value() const {
+		if (len == 0) return 0;
+		operation_type n = 0;
+		for (len_type i=len-1;; --i) {
+			n += digits[i];
+			if (i == 0) break;
+			n *= BASE;
+		}
+		return n;
+	}
+	
+	#ifndef NDEBUG
+	void fdump(FILE *stream) const {
+		fprintf(stream, LEN_PRINT "[", len);
+		if (len > 0) {
+			for (len_type i=len-1;; --i) {
+				fprintf(stream, DIGIT_PRINT, digits[i]);
+				if (i != 0) fprintf(stream, " ");
+				else break;
+			}
+		}
+		fprintf(stream, "]");
+	}
+	
+	void dump() const {
+		fdump(stdout);
+	}
+	#endif
+	
+	// print decimal
+	void fprintd(FILE *stream) const {
+		BigNum cur(*this);
+		dec_digit_type decimal[MAX_DECIMAL_LEN];
+		dec_len_type i = 0;
+		digit_type denom;
+		while (cur > 0) {
+			cur = cur.div(10, &denom);
+			decimal[i++] = denom;
+		}
+		if (i == 0) {
+			fputc('0', stream);
+			return;
+		}
+		--i;
+		while (true) {
+			fputc(decimal[i] + '0', stream);
+			if (i == 0) break;
+			--i;
+		}
+	}
+	
+	// print decimal
+	void printd() const {
+		fprintd(stdout);
+	}
+	
+	bool operator <(const digit_type b) const {
+		assert(b < BASE);
+		if (len > 1) return false;
+		if (len == 1) return digits[0] < b;
+		return 0 < b; // if (len == 0)
+	}
+	
+	bool operator <=(const digit_type b) const {
+		assert(b < BASE);
+		if (len > 1) return false;
+		if (len == 1) return digits[0] <= b;
+		return true; // if (len == 0)
+	}
+	
+	bool operator >(const digit_type b) const {
+		assert(b < BASE);
+		if (len > 1) return true;
+		if (len == 1) return digits[0] > b;
+		return false; // if (len == 0)
+	}
+	
+	bool operator >=(const digit_type b) const {
+		assert(b < BASE);
+		if (len > 1) return true;
+		if (len == 1) return digits[0] >= b;
+		return 0 >= b; // if (len == 0)
+	}
+	
+	bool operator <(const BigNum &b) const {
+		if (len != b.len) return len < b.len;
+		if (len == 0) return false;
+		for (len_type i=len-1;; --i) {
+			if (digits[i] < b.digits[i]) return true;
+			if (digits[i] > b.digits[i]) return false;
+			if (i == 0) break;
+		}
+		return false;
+	}
+	
+	bool operator <=(const BigNum &b) const {
+		if (len != b.len) return len < b.len;
+		if (len == 0) return true;
+		for (len_type i=len-1;; --i) {
+			if (digits[i] < b.digits[i]) return true;
+			if (digits[i] > b.digits[i]) return false;
+			if (i == 0) break;
+		}
+		return true;
+	}
+	
+	bool operator >(const BigNum &b) const {
+		if (len != b.len) return len > b.len;
+		if (len == 0) return false;
+		for (len_type i=len-1;; --i) {
+			if (digits[i] < b.digits[i]) return false;
+			if (digits[i] > b.digits[i]) return true;
+			if (i == 0) break;
+		}
+		return false;
+	}
+	
+	bool operator >=(const BigNum &b) const {
+		if (len != b.len) return len > b.len;
+		if (len == 0) return true;
+		for (len_type i=len-1;; --i) {
+			if (digits[i] < b.digits[i]) return false;
+			if (digits[i] > b.digits[i]) return true;
+			if (i == 0) break;
+		}
+		return true;
+	}
+	
+	// self += b * BASE^exp * coef
+	void add_mul(const BigNum &b, const len_type exp, const operation_type coef) {
+		assert(exp <= b.len + exp); // detect overflow
+		assert(b.len + exp <= MAX_LEN);
+		assert(coef < BASE);
+		if (b.len == 0 || coef == 0) return;
+		operation_type overflow = 0;
+		operation_type res;
+		len_type i, j;
+		for (i = len; i<exp; ++i) digits[i] = 0;
+		for (i = exp, j = 0; i<len && j<b.len; ++i, ++j) {
+			res = (operation_type)digits[i] + (operation_type)b.digits[j] * coef + overflow;
+			digits[i] = res % BASE;
+			overflow = res / BASE;
+		}
+		for (; j<b.len; ++i, ++j) {
+			res = (operation_type)b.digits[j] * coef + overflow;
+			digits[i] = res % BASE;
+			overflow = res / BASE;
+		}
+		for (; i<len && overflow > 0; ++i) {
+			res = (operation_type)digits[i] + overflow;
+			digits[i] = res % BASE;
+			overflow = res / BASE;
+		}
+		if (overflow > 0) {
+			assert(i < MAX_LEN);
+			digits[i++] = overflow;
+		}
+		if (len < i) len = i;
+	}
+	
+	BigNum operator+(const BigNum &b) const {
+		BigNum result(*this);
+		result.add_mul(b, 0, 1);
+		return result;
+	}
+	
+	// b may be > BASE
+	BigNum operator+(const operation_type b) const {
+		BigNum num_b(b);
+		return (*this) + num_b;
+	}
+	
+	BigNum operator*(const BigNum &b) const {
+		assert(len <= len + b.len); // detect overflow
+		assert(len + b.len <= MAX_LEN + 1);
+		BigNum result(0);
+		for (len_type i=0; i<b.len; ++i) {
+			result.add_mul(*this, i, b.digits[i]);
+		}
+		return result;
+	}
+	
+	// b may be > BASE
+	BigNum operator*(const operation_type b) const {
+		BigNum num_b(b);
+		return (*this) * num_b;
+	}
+	
+	BigNum div(const digit_type b, digit_type *denom) const {
+		assert(b < BASE);
+		assert(b > 0);
+		BigNum result(0);
+		if (len == 0) {
+			*denom = 0;
+			return result;
+		}
+		result.len = len;
+		if (digits[len-1] < b) --result.len;
+		operation_type carry = 0;
+		operation_type res;
+		for (len_type i=len-1;; --i) {
+			res = (operation_type)digits[i] + carry * BASE;
+			carry = res % b;
+			result.digits[i] = res / b;
+			assert(result.digits[i] < BASE);
+			if (i == 0) break;
+		}
+		*denom = carry;
+		return result;
+	}
+	
+	BigNum operator/(const digit_type b) const {
+		digit_type denom;
+		return div(b, &denom);
+	}
+	
+	static BigNum square_root(const BigNum &n) {
+		assert(n.len <= MAX_LEN - 1);
+		if (n.len == 0) return 0;
+		if (n.len == 1) return (digit_type)sqrt(n.digits[0]);
+		
+		BigNum l, r;
+		digit_type leading = n.digits[n.len-1];
+		if (n.len % 2 == 1) {
+			l.len = r.len = (n.len+1) / 2;
+			assert(l.len > 0);
+			for (len_type i=0; i<l.len-1; ++i) l.digits[i] = r.digits[i] = 0;
+			
+			l.digits[l.len-1] = floor(sqrt(leading));
+			r.digits[r.len-1] = ceil (sqrt(leading+1));
+		} else {
+			l.len = r.len = n.len / 2;
+			assert(l.len > 0);
+			for (len_type i=0; i<l.len-1; ++i) l.digits[i] = r.digits[i] = 0;
+			
+			digit_type l_leading = floor(sqrt(leading) * sqrt(BASE));
+			assert(l_leading < BASE);
+			l.digits[l.len-1] = l_leading;
+			
+			digit_type r_leading = (
+				leading + 1 == BASE ?
+				BASE :
+				ceil(sqrt(leading+1) * sqrt(BASE))
+			);
+			assert(r_leading <= BASE);
+			if (r_leading == BASE) {
+				r.digits[r.len-1] = 0;
+				++r.len;
+				r_leading = 1;
+			}
+			r.digits[r.len-1] = r_leading;
+		}
+		
+		BigNum m, m_sq;
+		while (l + 1 < r) {
+			m = (r + l) / 2;
+			m_sq = m * m;
+			if (m_sq < n) {
+				l = m;
+			} else if (n < m_sq) {
+				r = m;
+			} else {
+				l = r = m;
+				break;
+			}
+		}
+		
+		assert(r <= l + 1);
+		assert(l * l <= n);
+		assert(r.len > MAX_LEN / 2 || n <= r * r);
+		
+		return l;
+	}
+};
+
+#endif/*BIGNUM_H*/
+
