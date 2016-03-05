@@ -246,6 +246,19 @@ public:
 		return *this + num_b;
 	}
 	
+	BigNum& operator +=(const BigNum &b) {
+		// TODO: not efficient
+		BigNum result = (*this) + b;
+		(*this) = result;
+		return *this;
+	}
+	
+	// b may be > BASE
+	BigNum& operator +=(const operation_type b) {
+		BigNum num_b(b);
+		return *this += num_b;
+	}
+	
 	// self += b * BASE^exp * coef
 	void add_mul(const BigNum &b, const len_type exp, const operation_type coef) {
 		assert(exp <= b.len + exp); // detect overflow
@@ -292,6 +305,19 @@ public:
 	BigNum operator*(const operation_type b) const {
 		BigNum num_b(b);
 		return *this * num_b;
+	}
+	
+	BigNum& operator *=(const BigNum &b) {
+		// TODO: not efficient
+		BigNum result = (*this) * b;
+		(*this) = result;
+		return *this;
+	}
+	
+	// b may be > BASE
+	BigNum& operator *=(const operation_type b) {
+		BigNum num_b(b);
+		return *this *= num_b;
 	}
 	
 	BigNum operator-(const BigNum &b) const {
@@ -341,6 +367,19 @@ public:
 	BigNum operator-(const operation_type b) const {
 		BigNum num_b(b);
 		return *this - num_b;
+	}
+	
+	BigNum& operator -=(const BigNum &b) {
+		// TODO: not efficient
+		BigNum result = (*this) - b;
+		(*this) = result;
+		return *this;
+	}
+	
+	// b may be > BASE
+	BigNum& operator -=(const operation_type b) {
+		BigNum num_b(b);
+		return *this -= num_b;
 	}
 	
 	BigNum div(const digit_type b, digit_type *denom) const {
