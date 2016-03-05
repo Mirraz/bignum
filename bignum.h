@@ -213,7 +213,7 @@ public:
 	// b may be > BASE
 	BigNum operator+(const operation_type b) const {
 		BigNum num_b(b);
-		return (*this) + num_b;
+		return *this + num_b;
 	}
 	
 	// self += b * BASE^exp * coef
@@ -261,7 +261,7 @@ public:
 	// b may be > BASE
 	BigNum operator*(const operation_type b) const {
 		BigNum num_b(b);
-		return (*this) * num_b;
+		return *this * num_b;
 	}
 	
 	BigNum operator-(const BigNum &b) const {
@@ -310,7 +310,7 @@ public:
 	// b may be > BASE
 	BigNum operator-(const operation_type b) const {
 		BigNum num_b(b);
-		return (*this) - num_b;
+		return *this - num_b;
 	}
 	
 	BigNum div(const digit_type b, digit_type *denom) const {
