@@ -101,6 +101,27 @@ void test_sqrt() {
 	}
 }
 
+void test_extended_binary_euclidean() {
+	unsigned int i, j, k, l, g;
+	typedef BigNum<16, 3, 3> MyBigNum;
+	//typedef BigNum<16, 4+1, 6> MyBigNum;
+	MyBigNum a, b, x, y, gcd;
+	for (i=1; i<256; ++i) {
+	//for (i=1024*3; i<1024*4; ++i) {
+		for (j=1; j<256; ++j) {
+		//for (j=1024*3; j<1024*4; ++j) {
+			if (i % 2 == 0 && j % 2 == 0) continue;
+			a = i;
+			b = j;
+			MyBigNum::extended_binary_euclidean(a, b, &x, &y, &gcd);
+			k = x.value();
+			l = y.value();
+			g = gcd.value();
+			assert(i * k - j * l == g);
+		}
+	}
+}
+
 void suite() {
 	test_assign();
 	test_add();
@@ -108,6 +129,7 @@ void suite() {
 	test_sub();
 	test_div();
 	test_sqrt();
+	test_extended_binary_euclidean();
 }
 
 int main() {

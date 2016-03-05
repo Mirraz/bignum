@@ -489,6 +489,69 @@ public:
 		
 		return l;
 	}
+	
+	// solves a*x - b*y = gcd(a,b)
+	// a, b > 0 and are not both even
+	static void extended_binary_euclidean(
+		const BigNum &a, const BigNum &b,
+		BigNum *x, BigNum *y, BigNum *gcd
+	) {
+		assert(a > 0 && b > 0);
+		assert(!( a.is_even() && b.is_even() ));
+		assert(a.len < MAX_LEN && b.len < MAX_LEN);
+		
+		BigNum r0 = a, r1 = b;
+		BigNum s0 = 1, s1 = b;
+		BigNum t0 = 0, t1 = a - 1;
+		BigNum tmp;
+		
+		while (r0.is_even()) {
+			r0.div2();
+			if (s0.is_even() && t0.is_even()) {
+				s0.div2();
+				t0.div2();
+			} else {
+				s0 += b; assert(s0.is_even()); s0.div2();
+				t0 += a; assert(t0.is_even()); t0.div2();
+			}
+		}
+		
+		while (1) {
+			while (r1.is_even()) {
+				r1.div2();
+				if (s1.is_even() && t1.is_even()) {
+					s1.div2();
+					t1.div2();
+				} else {
+					s1 += b; assert(s1.is_even()); s1.div2();
+					t1 += a; assert(t1.is_even()); t1.div2();
+				}
+			}
+			if (r0 > r1) {
+				swap(r0, r1);
+				swap(s0, s1);
+				swap(t0, t1);
+			} else if (r0 == r1) {
+				break;
+			}
+			r1 -= r0;
+			if (s1 >= s0 && t1 >= t0) {
+				s1 -= s0;
+				t1 -= t0;
+			} else {
+				assert(s0 <= b);
+				assert(t0 <= a);
+				s1 += b - s0;
+				t1 += a - t0;
+			}
+		};
+		
+		//assert(a * s1 - b * t1 == r1);
+		assert(s1 < b || t1 < a);
+		*x = s1;
+		*y = t1;
+		*gcd = r1;
+	}
 };
 
 #endif/*BIGNUM_H*/
