@@ -72,18 +72,18 @@ void test_sub() {
 
 void test_div() {
 	unsigned int i, j, k, l;
-	digit_type denom;
+	digit_type remaind;
 	BigNum<10, 3, 3> a, b, c;
 	for (j=1; j<10; ++j) {
 		for (i=0; i<1000; ++i) {
 			a = i;
 			b = a / j;
-			c = a.div(j, &denom);
+			c = a.div(j, &remaind);
 			k = b.value();
 			l = c.value();
 			assert(k == i / j);
 			assert(l == i / j);
-			assert(denom == i % j);
+			assert(remaind == i % j);
 		}
 	}
 }

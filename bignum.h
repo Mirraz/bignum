@@ -89,10 +89,10 @@ public:
 		BigNum cur(*this);
 		dec_digit_type decimal[MAX_DECIMAL_LEN];
 		dec_len_type i = 0;
-		digit_type denom;
+		digit_type remaind;
 		while (cur > 0) {
-			cur = cur.div(10, &denom);
-			decimal[i++] = denom;
+			cur = cur.div(10, &remaind);
+			decimal[i++] = remaind;
 		}
 		if (i == 0) {
 			fputc('0', stream);
@@ -390,12 +390,12 @@ public:
 		return *this -= num_b;
 	}
 	
-	BigNum div(const digit_type b, digit_type *denom) const {
+	BigNum div(const digit_type b, digit_type *remaind) const {
 		assert(b < BASE);
 		assert(b > 0);
 		BigNum result(0);
 		if (len == 0) {
-			*denom = 0;
+			*remaind = 0;
 			return result;
 		}
 		result.len = len;
@@ -409,13 +409,13 @@ public:
 			assert(result.digits[i] < BASE);
 			if (i == 0) break;
 		}
-		*denom = carry;
+		*remaind = carry;
 		return result;
 	}
 	
 	BigNum operator/(const digit_type b) const {
-		digit_type denom;
-		return div(b, &denom);
+		digit_type remaind;
+		return div(b, &remaind);
 	}
 	
 	void div2() {
