@@ -20,7 +20,9 @@ typedef uint8_t       dec_digit_type;
 
 template<operation_type BASE, len_type MAX_LEN, dec_len_type MAX_DECIMAL_LEN>
 class BigNum {
-	static_assert(BASE <= UINT32_MAX, "BASE is too large");
+	static_assert(BASE > 1, "BASE is too small");
+	static_assert(BASE - 1 <= UINT32_MAX, "BASE is too large");
+	static_assert(MAX_LEN > 0, "MAX_LEN is too small");
 	static_assert(MAX_LEN < UINT_FAST16_MAX, "MAX_LEN is too large");
 	
 private:
