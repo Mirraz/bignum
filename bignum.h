@@ -58,6 +58,12 @@ public:
 		return n;
 	}
 	
+	static void swap(BigNum &a, BigNum &b) {
+		// TODO: not efficient
+		BigNum tmp;
+		tmp = a; a = b; b = tmp;
+	}
+	
 	#ifndef NDEBUG
 	void fdump(FILE *stream) const {
 		fprintf(stream, LEN_PRINT "[", len);
@@ -408,6 +414,22 @@ public:
 	BigNum operator/(const digit_type b) const {
 		digit_type denom;
 		return div(b, &denom);
+	}
+	
+	void div2() {
+		// TODO: not efficient
+		BigNum result = (*this) / 2;
+		(*this) = result;
+	}
+	
+	static_assert(BASE % 2 == 0, "BASE is not even");
+	
+	bool is_even() const {
+		return (len == 0 || !(digits[0] & 1));
+	}
+	
+	bool is_odd() const {
+		return (len != 0 && (digits[0] & 1));
 	}
 	
 	static BigNum square_root(const BigNum &n) {
