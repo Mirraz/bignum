@@ -175,6 +175,47 @@ public:
 		return true;
 	}
 	
+	BigNum operator+(const BigNum &b) const {
+		BigNum result;
+		operation_type overflow = 0;
+		operation_type summ;
+		len_type i;
+		for (i = 0; i<len && i<b.len; ++i) {
+			summ = (operation_type)digits[i] + (operation_type)b.digits[i] + overflow;
+			if (summ < BASE) {overflow = 0;}
+			else {summ -= BASE; overflow = 1;}
+			result.digits[i] = summ;
+		}
+		for (; i<b.len; ++i) {
+			summ = (operation_type)b.digits[i] + overflow;
+			if (summ < BASE) {overflow = 0;}
+			else {summ -= BASE; overflow = 1;}
+			result.digits[i] = summ;
+		}
+		for (; i<len && overflow > 0; ++i) {
+			summ = (operation_type)digits[i] + overflow;
+			if (summ < BASE) {overflow = 0;}
+			else {summ -= BASE; overflow = 1;}
+			result.digits[i] = summ;
+		}
+		if (overflow == 0) {
+			for (; i<len; ++i) {
+				result.digits[i] = digits[i];
+			}
+		} else {
+			assert(i < MAX_LEN);
+			result.digits[i++] = overflow;
+		}
+		result.len = i;
+		return result;
+	}
+	
+	// b may be > BASE
+	BigNum operator+(const operation_type b) const {
+		BigNum num_b(b);
+		return (*this) + num_b;
+	}
+	
 	// self += b * BASE^exp * coef
 	void add_mul(const BigNum &b, const len_type exp, const operation_type coef) {
 		assert(exp <= b.len + exp); // detect overflow
@@ -205,18 +246,6 @@ public:
 			digits[i++] = overflow;
 		}
 		if (len < i) len = i;
-	}
-	
-	BigNum operator+(const BigNum &b) const {
-		BigNum result(*this);
-		result.add_mul(b, 0, 1);
-		return result;
-	}
-	
-	// b may be > BASE
-	BigNum operator+(const operation_type b) const {
-		BigNum num_b(b);
-		return (*this) + num_b;
 	}
 	
 	BigNum operator*(const BigNum &b) const {
