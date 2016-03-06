@@ -1,6 +1,7 @@
 #ifndef BIGNUM_H
 #define BIGNUM_H
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdint.h>
 #ifndef NDEBUG
