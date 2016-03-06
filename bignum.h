@@ -319,7 +319,7 @@ public:
 	}
 	
 	// self += b * BASE^exp * coef
-	void add_mul(const BigNum &b, const len_type exp, const operation_type coef) {
+	void add_mul_assign(const BigNum &b, const len_type exp, const operation_type coef) {
 		assert(exp <= b.len + exp); // detect overflow
 		assert(b.len + exp <= MAX_LEN);
 		assert(coef < BASE);
@@ -355,7 +355,7 @@ public:
 		assert(len + b.len <= MAX_LEN + 1);
 		BigNum result(0);
 		for (len_type i=0; i<b.len; ++i) {
-			result.add_mul(*this, i, b.digits[i]);
+			result.add_mul_assign(*this, i, b.digits[i]);
 		}
 		return result;
 	}
@@ -470,15 +470,20 @@ public:
 	}
 	
 	BigNum& operator /=(const digit_type b) {
+		// TODO: not efficient
 		BigNum result = (*this) / b;
 		(*this) = result;
 		return *this;
 	}
 	
-	void div2() {
+	BigNum div2() const {
+		// TODO: not efficient for binary BASE
+		return (*this) / 2;
+	}
+	
+	void div2_assign() {
 		// TODO: not efficient
-		BigNum result = (*this) / 2;
-		(*this) = result;
+		(*this) = div2();
 	}
 	
 	static_assert(BASE % 2 == 0, "BASE is not even");
@@ -582,8 +587,7 @@ public:
 	
 	void shift_left_assign(const len_type exp) {
 		// TODO: not efficient
-		BigNum result = shift_left(exp);
-		(*this) = result;
+		(*this) = shift_left(exp);
 	}
 	
 	BigNum pow(const len_type exp) const {
@@ -689,25 +693,25 @@ public:
 		BigNum tmp;
 		
 		while (r0.is_even()) {
-			r0.div2();
+			r0.div2_assign();
 			if (s0.is_even() && t0.is_even()) {
-				s0.div2();
-				t0.div2();
+				s0.div2_assign();
+				t0.div2_assign();
 			} else {
-				s0 += b; assert(s0.is_even()); s0.div2();
-				t0 += a; assert(t0.is_even()); t0.div2();
+				s0 += b; assert(s0.is_even()); s0.div2_assign();
+				t0 += a; assert(t0.is_even()); t0.div2_assign();
 			}
 		}
 		
 		while (1) {
 			while (r1.is_even()) {
-				r1.div2();
+				r1.div2_assign();
 				if (s1.is_even() && t1.is_even()) {
-					s1.div2();
-					t1.div2();
+					s1.div2_assign();
+					t1.div2_assign();
 				} else {
-					s1 += b; assert(s1.is_even()); s1.div2();
-					t1 += a; assert(t1.is_even()); t1.div2();
+					s1 += b; assert(s1.is_even()); s1.div2_assign();
+					t1 += a; assert(t1.is_even()); t1.div2_assign();
 				}
 			}
 			if (r0 > r1) {
