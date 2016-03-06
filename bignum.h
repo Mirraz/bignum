@@ -91,23 +91,38 @@ public:
 	
 	// print decimal
 	void fprintd(FILE *stream) const {
-		BigNum cur(*this);
-		dec_digit_type decimal[MAX_DECIMAL_LEN];
-		dec_len_type i = 0;
-		digit_type remaind;
-		while (cur > 0) {
-			cur = cur.div(10, &remaind);
-			decimal[i++] = remaind;
-		}
-		if (i == 0) {
-			fputc('0', stream);
-			return;
-		}
-		--i;
-		while (true) {
-			fputc(decimal[i] + '0', stream);
-			if (i == 0) break;
+		if (BASE > 10) {
+			BigNum cur(*this);
+			dec_digit_type decimal[MAX_DECIMAL_LEN];
+			dec_len_type i = 0;
+			digit_type remaind;
+			while (cur > 0) {
+				assert(i < MAX_DECIMAL_LEN);
+				cur = cur.div(10, &remaind);
+				decimal[i++] = remaind;
+			}
+			if (i == 0) {
+				fputc('0', stream);
+				return;
+			}
 			--i;
+			while (true) {
+				fputc(decimal[i] + '0', stream);
+				if (i == 0) break;
+				--i;
+			}
+		} else if (BASE == 10) {
+			if (len == 0) {
+				fputc('0', stream);
+				return;
+			}
+			for (len_type i=len-1;; --i) {
+				fputc(digits[i] + '0', stream);
+				if (i == 0) break;
+			}
+		} else {
+			// TODO
+			static_assert(BASE >= 10, "BASE is less than 10");
 		}
 	}
 	
