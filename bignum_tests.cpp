@@ -88,6 +88,18 @@ void test_div() {
 	}
 }
 
+void test_div2() {
+	unsigned int i, j;
+	BigNum<16, 2, 2> a, b;
+	for (i=0; i<256; ++i) {
+		a = i;
+		b = a.div2();
+		j = b.value();
+		//printf("%u\t%u\n", i, j);
+		assert(j == i/2);
+	}
+}
+
 void test_div_long() {
 	unsigned int i, j, k, l;
 	BigNum<10, 3, 3> a, b, c, d;
@@ -215,6 +227,7 @@ void suite() {
 	test_sub();
 	test_div();
 	test_div_long();
+	test_div2();
 	test_pow();
 	test_sqrt();
 	test_extended_binary_euclidean();

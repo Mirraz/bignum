@@ -477,8 +477,23 @@ public:
 	}
 	
 	BigNum div2() const {
-		// TODO: not efficient for binary BASE
-		return (*this) / 2;
+		if (!(BASE & (BASE-1))) { // BASE is power of 2
+			if (len == 0) return 0;
+			BigNum result;
+			digit_type carry = 0;
+			bool next_carry;
+			for (len_type i=len-1;; --i) {
+				next_carry = digits[i] & 1;
+				result.digits[i] = carry | (digits[i] >> 1);
+				carry = (next_carry ? BASE/2 : 0);
+				if (i == 0) break;
+			}
+			if (result.digits[len-1] == 0) result.len = len-1;
+			else result.len = len;
+			return result;
+		} else {
+			return (*this) / 2;
+		}
 	}
 	
 	void div2_assign() {
