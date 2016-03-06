@@ -48,7 +48,9 @@ public:
 		len = i;
 	}
 	
-	BigNum(const len_type b_len, const digit_type b_digits[]) : len(b_len) {
+	BigNum(const len_type b_len, const digit_type b_digits[]) {
+		assert(b_len <= MAX_LEN);
+		len = b_len;
 		for (len_type i=0; i<b_len; ++i) digits[i] = b_digits[i];
 	}
 	
