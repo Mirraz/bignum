@@ -7,6 +7,7 @@
 #ifndef NDEBUG
 #  include <inttypes.h>
 #endif
+#include <memory.h>
 #include <math.h>
 
 typedef uint_fast16_t len_type;
@@ -60,7 +61,7 @@ public:
 	BigNum(const len_type b_len, const digit_type b_digits[]) {
 		assert(b_len <= MAX_LEN);
 		len = b_len;
-		for (len_type i=0; i<b_len; ++i) digits[i] = b_digits[i];
+		memcpy(digits, b_digits, sizeof(digit_type)*b_len);
 	}
 	
 	BigNum(const BigNum &b) : BigNum(b.len, b.digits) {}
