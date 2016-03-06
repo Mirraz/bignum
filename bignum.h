@@ -56,6 +56,14 @@ public:
 	
 	BigNum(const BigNum &b) : BigNum(b.len, b.digits) {}
 	
+	template<operation_type B, len_type L, dec_len_type D>
+	BigNum<B, L, D> clone_template() const {
+		return BigNum<B, L, D>(len, digits);
+	}
+	
+	template<operation_type B, len_type L, dec_len_type D>
+	BigNum(const BigNum<B, L, D> &b) : BigNum(b.clone_template<BASE, MAX_LEN, MAX_DECIMAL_LEN>()) {}
+	
 	operation_type value() const {
 		if (len == 0) return 0;
 		operation_type n = 0;
