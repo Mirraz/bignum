@@ -434,6 +434,30 @@ public:
 		return (len != 0 && (digits[0] & 1));
 	}
 	
+	BigNum operator<<(const len_type exp) const {
+		assert(len <= len + exp); // detect overflow
+		assert(len + exp <= MAX_LEN);
+		if (exp == 0 || len == 0) return 0;
+		BigNum result;
+		len_type i;
+		for (i = len+exp-1; i>=exp; --i) {
+			result.digits[i] = digits[i-exp];
+		}
+		for (;; --i) {
+			result.digits[i] = 0;
+			if (i == 0) break;
+		}
+		result.len = len + exp;
+		return result;
+	}
+	
+	BigNum& operator <<=(const len_type exp) {
+		// TODO: not efficient
+		BigNum result = (*this) << exp;
+		(*this) = result;
+		return *this;
+	}
+	
 	BigNum pow(const len_type exp) const {
 		assert(len > 0 || exp > 0); // forbid 0^0
 		BigNum result(1);
