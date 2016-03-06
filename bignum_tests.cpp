@@ -173,7 +173,7 @@ void test_extended_binary_euclidean() {
 	}
 }
 
-void test_large_01() {
+void test_extended_binary_euclidean_large() {
 	typedef BigNum<0x100000000llu, 686+1, 6617> MyBigNum;
 	MyBigNum n, a, b, x, y, gcd;
 	n = 2000; a = n.pow(2000);
@@ -195,7 +195,7 @@ void suite() {
 	test_pow();
 	test_sqrt();
 	test_extended_binary_euclidean();
-	test_large_01();
+	test_extended_binary_euclidean_large();
 }
 
 int main() {
