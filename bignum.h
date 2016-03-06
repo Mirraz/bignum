@@ -330,8 +330,8 @@ public:
 	
 	BigNum operator-(const BigNum &b) const {
 		assert(b.len <= len);
-		BigNum result(0);
-		if (len == 0) return result;
+		if (len == 0) return 0;
+		BigNum result;
 		operation_type carry = 0;
 		operation_type subtr, res;
 		len_type i, j = 0;
@@ -397,7 +397,7 @@ public:
 			*remaind = 0;
 			return 0;
 		}
-		BigNum result(0);
+		BigNum result;
 		result.len = len;
 		if (digits[len-1] < b) --result.len;
 		operation_type carry = 0;
