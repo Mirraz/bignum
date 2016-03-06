@@ -440,6 +440,12 @@ public:
 		return div(b, &remaind);
 	}
 	
+	BigNum& operator /=(const digit_type b) {
+		BigNum result = (*this) / b;
+		(*this) = result;
+		return *this;
+	}
+	
 	void div2() {
 		// TODO: not efficient
 		BigNum result = (*this) / 2;
@@ -501,6 +507,31 @@ public:
 		result.len = j;
 		*remaind = cur_value;
 		return result;
+	}
+	
+	BigNum operator/(const BigNum &b) const {
+		BigNum remaind;
+		return div(b, &remaind);
+	}
+	
+	BigNum& operator /=(const BigNum &b) {
+		// TODO: not efficient
+		BigNum result = (*this) / b;
+		(*this) = result;
+		return *this;
+	}
+	
+	BigNum operator%(const BigNum &b) const {
+		BigNum remaind;
+		div(b, &remaind);
+		return remaind;
+	}
+	
+	BigNum& operator %=(const BigNum &b) {
+		// TODO: not efficient
+		BigNum result = (*this) % b;
+		(*this) = result;
+		return *this;
 	}
 	
 	BigNum shift_left(const len_type exp) const {
