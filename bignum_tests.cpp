@@ -88,6 +88,23 @@ void test_div() {
 	}
 }
 
+void test_div_long() {
+	unsigned int i, j, k, l;
+	BigNum<10, 3, 3> a, b, c, d;
+	for (i=0; i<1000; ++i) {
+		for (j=1; j<100; ++j) {
+			a = i;
+			b = j;
+			c = a.div(b, &d);
+			k = c.value();
+			l = d.value();
+			//printf("%u / %u = %u, %u\n", i, j, k, l);
+			assert(k == i / j);
+			assert(l == i % j);
+		}
+	}
+}
+
 int my_pow(const uint_fast64_t base, uint_fast8_t exp, uint_fast64_t *power) {
 	uint_fast64_t result = 1;
 	uint_fast8_t mask = 1;
@@ -174,6 +191,7 @@ void suite() {
 	test_mul();
 	test_sub();
 	test_div();
+	test_div_long();
 	test_pow();
 	test_sqrt();
 	test_extended_binary_euclidean();

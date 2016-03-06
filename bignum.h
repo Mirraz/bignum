@@ -434,6 +434,53 @@ public:
 		return (len != 0 && (digits[0] & 1));
 	}
 	
+private:
+	// find max x: b * x <= cur_value
+	static digit_type div_find_digit(const BigNum &b, const BigNum &cur_value) {
+		BigNum cur;
+		operation_type x = 0;
+		operation_type l = 0, r = BASE, m;
+		while (l <= r) {
+			m = (l + r) >> 1;
+			cur = b * m;
+			if (cur <= cur_value) {
+				x = m;
+				l = m + 1;
+			} else {
+				r = m - 1;
+			}
+		}
+		assert(b * x <= cur_value);
+		return x;
+	}
+	
+public:
+	BigNum div(const BigNum &b, BigNum *remaind) const {
+		assert(b.len > 0);
+		assert(b.len < MAX_LEN);
+		if (len == 0) {
+			*remaind = 0;
+			return 0;
+		}
+		BigNum result(0);
+		BigNum cur_value(0);
+		operation_type x;
+		len_type j = 0;
+		for (len_type i = len-1;; i--) {
+			cur_value.digits[0] = digits[i];
+			if (cur_value.len == 0 && cur_value.digits[0] > 0) cur_value.len = 1;
+			x = div_find_digit(b, cur_value);
+			if (j == 0 && x > 0) j = i + 1;
+			result.digits[i] = x;
+			cur_value -= b * x;
+			if (i == 0) break;
+			cur_value <<= 1;
+		}
+		result.len = j;
+		*remaind = cur_value;
+		return result;
+	}
+	
 	BigNum operator<<(const len_type exp) const {
 		assert(len <= len + exp); // detect overflow
 		assert(len + exp <= MAX_LEN);
