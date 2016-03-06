@@ -474,14 +474,14 @@ public:
 			result.digits[i] = x;
 			cur_value -= b * x;
 			if (i == 0) break;
-			cur_value <<= 1;
+			cur_value.shift_left_assign(1);
 		}
 		result.len = j;
 		*remaind = cur_value;
 		return result;
 	}
 	
-	BigNum operator<<(const len_type exp) const {
+	BigNum shift_left(const len_type exp) const {
 		assert(len <= len + exp); // detect overflow
 		assert(len + exp <= MAX_LEN);
 		if (exp == 0 || len == 0) return 0;
@@ -498,11 +498,10 @@ public:
 		return result;
 	}
 	
-	BigNum& operator <<=(const len_type exp) {
+	void shift_left_assign(const len_type exp) {
 		// TODO: not efficient
-		BigNum result = (*this) << exp;
+		BigNum result = shift_left(exp);
 		(*this) = result;
-		return *this;
 	}
 	
 	BigNum pow(const len_type exp) const {
