@@ -393,11 +393,11 @@ public:
 	BigNum div(const digit_type b, digit_type *remaind) const {
 		assert(b < BASE);
 		assert(b > 0);
-		BigNum result(0);
 		if (len == 0) {
 			*remaind = 0;
-			return result;
+			return 0;
 		}
+		BigNum result(0);
 		result.len = len;
 		if (digits[len-1] < b) --result.len;
 		operation_type carry = 0;
