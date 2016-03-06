@@ -576,6 +576,16 @@ public:
 		return result;
 	}
 	
+	static BigNum min(const BigNum &a, const BigNum &b) {
+		if (a <= b) return a;
+		return b;
+	}
+	
+	static BigNum max(const BigNum &a, const BigNum &b) {
+		if (a >= b) return a;
+		return b;
+	}
+	
 	static BigNum square_root(const BigNum &n) {
 		assert(n.len <= MAX_LEN - 1);
 		if (n.len == 0) return 0;
