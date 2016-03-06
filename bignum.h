@@ -714,6 +714,40 @@ public:
 		*y = t1;
 		*gcd = r1;
 	}
+	
+	// solves a*x - b*y = c
+	// a, b > 0 and are not both even
+	// returns: success
+	static bool linear_diophantine(
+		const BigNum &a, const BigNum &b, const BigNum &c,
+		BigNum *x, BigNum *y
+	) {
+		BigNum xe, ye, gcd;
+		extended_binary_euclidean(a, b, &xe, &ye, &gcd);
+		// a * xe - b * ye = gcd
+		BigNum ar, br, cr, crem;
+		cr = c.div(gcd, &crem);
+		if (crem != 0) return false;
+		ar = a / gcd;
+		br = b / gcd;
+		// ar * xe - br * ye = 1    | * cr
+		
+		typedef BigNum<BASE, MAX_LEN*2, MAX_DECIMAL_LEN*2> DoubleBigNum;
+		DoubleBigNum ad = ar, bd = br, cd = cr;
+		DoubleBigNum xd = xe, yd = ye;
+		xd *= cd;
+		yd *= cd;
+		// ad * xd - bd * yd = cd
+		DoubleBigNum pd = DoubleBigNum::min(xd / bd, yd / ad);
+		xd -= bd * pd;
+		yd -= ad * pd;
+		
+		BigNum xr = xd;
+		BigNum yr = yd;
+		*x = xr;
+		*y = yr;
+		return true;
+	}
 };
 
 #endif/*BIGNUM_H*/

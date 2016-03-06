@@ -185,6 +185,29 @@ void test_extended_binary_euclidean_large() {
 	assert(gcd == 1);
 }
 
+void test_linear_diophantine() {
+	unsigned int i, j, k, m, n;
+	typedef BigNum<16, 3, 3> MyBigNum;
+	MyBigNum a, b, c, x, y;
+	for (i=1; i<16*3; ++i) {
+		for (j=1; j<16*3; ++j) {
+			if (i % 2 == 0 && j % 2 == 0) continue;
+			for (k=1; k<16*3; ++k) {
+				a = i;
+				b = j;
+				c = k;
+				bool res = MyBigNum::linear_diophantine(a, b, c, &x, &y);
+				if (res) {
+					m = x.value();
+					n = y.value();
+					//printf("%u * %u - %u * %u = %u\n", i, m, j, n, k);
+					assert(i * m - j * n == k);
+				}
+			}
+		}
+	}
+}
+
 void suite() {
 	test_assign();
 	test_add();
@@ -196,6 +219,7 @@ void suite() {
 	test_sqrt();
 	test_extended_binary_euclidean();
 	test_extended_binary_euclidean_large();
+	test_linear_diophantine();
 }
 
 int main() {
