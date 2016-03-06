@@ -13,6 +13,9 @@ typedef uint32_t      digit_type;
 typedef uint_fast64_t operation_type;
 typedef uint_fast16_t dec_len_type;
 typedef uint8_t       dec_digit_type;
+#define LEN_TYPE_MAX UINT_FAST16_MAX
+#define DIGIT_TYPE_MAX UINT32_MAX
+#define DEC_LEN_TYPE_MAX UINT_FAST16_MAX
 #ifndef NDEBUG
 #  define LEN_PRINT "%" PRIuFAST16
 #  define DIGIT_PRINT "%" PRIu32
@@ -21,9 +24,11 @@ typedef uint8_t       dec_digit_type;
 template<operation_type BASE, len_type MAX_LEN, dec_len_type MAX_DECIMAL_LEN>
 class BigNum {
 	static_assert(BASE > 1, "BASE is too small");
-	static_assert(BASE - 1 <= UINT32_MAX, "BASE is too large");
+	static_assert(BASE - 1 <= DIGIT_TYPE_MAX, "BASE is too large");
 	static_assert(MAX_LEN > 0, "MAX_LEN is too small");
-	static_assert(MAX_LEN < UINT_FAST16_MAX, "MAX_LEN is too large");
+	static_assert(MAX_LEN < LEN_TYPE_MAX, "MAX_LEN is too large");
+	static_assert(MAX_DECIMAL_LEN > 0, "MAX_LEN is too small");
+	static_assert(MAX_DECIMAL_LEN < DEC_LEN_TYPE_MAX, "MAX_DECIMAL_LEN is too large");
 	
 private:
 	len_type len;
