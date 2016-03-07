@@ -6,7 +6,7 @@
 #include "bignum.h"
 
 void test_assign() {
-	BigNum<10, 2, 2> a;
+	BigNum<10, 2> a;
 	for (unsigned int i=0; i<100; ++i) {
 		a = i;
 		unsigned int v = a.value();
@@ -16,7 +16,7 @@ void test_assign() {
 
 void test_add() {
 	unsigned int i, j, k, l;
-	BigNum<10, 2, 2> a, b, c, d;
+	BigNum<10, 2> a, b, c, d;
 	for (i=0; i<=99; ++i) {
 		for (j=0; j<=99; ++j) {
 			if (i+j >= 100) continue;
@@ -34,7 +34,7 @@ void test_add() {
 
 void test_mul() {
 	unsigned int i, j, k, l;
-	BigNum<10, 3, 3> a, b, c, d;
+	BigNum<10, 3> a, b, c, d;
 	for (i=0; i<=99; ++i) {
 		for (j=0; j<=99; ++j) {
 			if (i*j >= 1000) continue;
@@ -52,7 +52,7 @@ void test_mul() {
 
 void test_sub() {
 	unsigned int i, j, k, l;
-	BigNum<10, 2, 2> a, b, c, d, e;
+	BigNum<10, 2> a, b, c, d, e;
 	for (i=0; i<=99; ++i) {
 		for (j=0; j<=99; ++j) {
 			if (i < j) continue;
@@ -73,7 +73,7 @@ void test_sub() {
 void test_div() {
 	unsigned int i, j, k, l;
 	digit_type remaind;
-	BigNum<10, 3, 3> a, b, c;
+	BigNum<10, 3> a, b, c;
 	for (j=1; j<10; ++j) {
 		for (i=0; i<1000; ++i) {
 			a = i;
@@ -90,7 +90,7 @@ void test_div() {
 
 void test_div2() {
 	unsigned int i, j;
-	BigNum<16, 2, 2> a, b;
+	BigNum<16, 2> a, b;
 	for (i=0; i<256; ++i) {
 		a = i;
 		b = a.div2();
@@ -102,7 +102,7 @@ void test_div2() {
 
 void test_div_long() {
 	unsigned int i, j, k, l;
-	BigNum<10, 3, 3> a, b, c, d;
+	BigNum<10, 3> a, b, c, d;
 	for (i=0; i<1000; ++i) {
 		for (j=1; j<100; ++j) {
 			a = i;
@@ -138,7 +138,7 @@ int my_pow(const uint_fast64_t base, uint_fast8_t exp, uint_fast64_t *power) {
 
 void test_pow() {
 	uint_fast64_t i, j, k, l;
-	BigNum<16, 16, 19> a, b;
+	BigNum<16, 16> a, b;
 	for (i=0; i<1024*64; ++i) {
 		for (j=0; j<64; ++j) {
 			if (i == 0 && j == 0) continue;
@@ -153,7 +153,7 @@ void test_pow() {
 
 void test_sqrt() {
 	unsigned int i, j, k;
-	typedef BigNum<10, 4, 4> MyBigNum;
+	typedef BigNum<10, 4> MyBigNum;
 	MyBigNum a, b;
 	for (i=0; i<1000; ++i) {
 		a = i;
@@ -166,8 +166,8 @@ void test_sqrt() {
 
 void test_extended_binary_euclidean() {
 	unsigned int i, j, k, l, g;
-	typedef BigNum<16, 3, 3> MyBigNum;
-	//typedef BigNum<16, 4+1, 6> MyBigNum;
+	typedef BigNum<16, 3> MyBigNum;
+	//typedef BigNum<16, 4+1> MyBigNum;
 	MyBigNum a, b, x, y, gcd;
 	for (i=1; i<256; ++i) {
 	//for (i=1024*3; i<1024*4; ++i) {
@@ -186,7 +186,7 @@ void test_extended_binary_euclidean() {
 }
 
 void test_extended_binary_euclidean_large() {
-	typedef BigNum<0x100000000llu, 686+1, 6617> MyBigNum;
+	typedef BigNum<0x100000000llu, 686+1> MyBigNum;
 	MyBigNum n, a, b, x, y, gcd;
 	n = 2000; a = n.pow(2000);
 	n = 1999; b = n.pow(1999);
@@ -199,7 +199,7 @@ void test_extended_binary_euclidean_large() {
 
 void test_linear_diophantine() {
 	unsigned int i, j, k, m, n;
-	typedef BigNum<16, 3, 3> MyBigNum;
+	typedef BigNum<16, 3> MyBigNum;
 	MyBigNum a, b, c, x, y;
 	for (i=1; i<16*3; ++i) {
 		for (j=1; j<16*3; ++j) {

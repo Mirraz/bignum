@@ -15,30 +15,60 @@ typedef uint32_t      digit_type;
 typedef uint_fast64_t operation_type;
 typedef uint_fast16_t dec_len_type;
 typedef uint8_t       dec_digit_type;
-typedef uint_fast8_t  base_dec_len_type;
+typedef uint_fast8_t  pow_exp_type;
 #define LEN_TYPE_MAX UINT_FAST16_MAX
 #define DIGIT_TYPE_MAX UINT32_MAX
 #define DEC_LEN_TYPE_MAX UINT_FAST16_MAX
-#define BASE_DEC_LEN_TYPE_MAX UINT_FAST8_MAX
 #ifndef NDEBUG
 #  define LEN_PRINT "%" PRIuFAST16
 #  define DIGIT_PRINT "%" PRIu32
 #endif
 
+constexpr pow_exp_type log_floor_constexpr(operation_type base, operation_type pow) {
+	return (
+		pow < base ?
+		0 :
+		log_floor_constexpr(base, pow/base) + 1
+	);
+}
+
+constexpr bool exact_pow_constexpr(operation_type base, operation_type pow) {
+	return (
+		pow % base != 0 ?
+		false :
+		(
+			pow == base ?
+			true :
+			exact_pow_constexpr(base, pow/base)
+		)
+	);
+}
+
 template<
 	operation_type BASE,
 	len_type MAX_LEN,
-	dec_len_type MAX_DECIMAL_LEN,
-	base_dec_len_type BASE_DECIMAL_LEN = (BASE == 10 ? 1 : 0)
+	bool IS_BASE_DECIMAL = exact_pow_constexpr(10, BASE),
+	// MAX_DECIMAL_LEN may be not optimal
+	// optimal MAX_DECIMAL_LEN = ceil( log(BASE) / log(10) * MAX_LEN )
+	dec_len_type MAX_DECIMAL_LEN = (
+		IS_BASE_DECIMAL ?
+		0 :
+		((dec_len_type)log_floor_constexpr(10, BASE) + 1) * (dec_len_type)MAX_LEN
+	),
+	pow_exp_type BASE_DECIMAL_LEN = (
+		IS_BASE_DECIMAL ?
+		log_floor_constexpr(10, BASE) :
+		0
+	)
 >
 class BigNum {
 	static_assert(BASE > 1, "BASE is too small");
 	static_assert(BASE - 1 <= DIGIT_TYPE_MAX, "BASE is too large");
 	static_assert(MAX_LEN > 0, "MAX_LEN is too small");
 	static_assert(MAX_LEN < LEN_TYPE_MAX, "MAX_LEN is too large");
-	static_assert(MAX_DECIMAL_LEN > 0 || BASE_DECIMAL_LEN > 0, "MAX_LEN is too small");
+	static_assert(IS_BASE_DECIMAL == !(MAX_DECIMAL_LEN > 0), "MAX_DECIMAL_LEN is wrong");
+	static_assert(IS_BASE_DECIMAL == (BASE_DECIMAL_LEN > 0), "BASE_DECIMAL_LEN is wrong");
 	static_assert(MAX_DECIMAL_LEN < DEC_LEN_TYPE_MAX, "MAX_DECIMAL_LEN is too large");
-	static_assert(BASE_DECIMAL_LEN < BASE_DEC_LEN_TYPE_MAX, "BASE_DECIMAL_LEN is too large");
 	
 private:
 	len_type len;
@@ -67,14 +97,22 @@ public:
 	
 	BigNum(const BigNum &b) : BigNum(b.len, b.digits) {}
 	
-	template<operation_type B, len_type L, dec_len_type D, uint_fast8_t BDL>
-	BigNum<B, L, D, BDL> clone_template() const {
-		return BigNum<B, L, D, BDL>(len, digits);
+	template<operation_type B, len_type L, bool ID, dec_len_type DL, pow_exp_type BDL>
+	BigNum<B, L, ID, DL, BDL> clone_template() const {
+		return BigNum<B, L, ID, DL, BDL>(len, digits);
 	}
 	
-	template<operation_type B, len_type L, dec_len_type D, uint_fast8_t BDL>
-	BigNum(const BigNum<B, L, D, BDL> &b) :
-		BigNum(b.clone_template<BASE, MAX_LEN, MAX_DECIMAL_LEN, BASE_DECIMAL_LEN>()) {}
+	template<operation_type B, len_type L, bool ID, dec_len_type DL, pow_exp_type BDL>
+	BigNum(const BigNum<B, L, ID, DL, BDL> &b) :
+		BigNum(
+			b.clone_template<
+				BASE,
+				MAX_LEN,
+				IS_BASE_DECIMAL,
+				MAX_DECIMAL_LEN,
+				BASE_DECIMAL_LEN
+			>()
+		) {}
 	
 	operation_type value() const {
 		if (len == 0) return 0;
@@ -116,13 +154,13 @@ public:
 			fputc('0', stream);
 			return;
 		}
-		if (BASE_DECIMAL_LEN > 0) {
+		if (IS_BASE_DECIMAL) {
 			digit_type cur, dec_digit_mask, dec_digit;
 			bool leading_zeros = true;
 			for (len_type i=len-1;; --i) {
 				cur = digits[i];
 				dec_digit_mask = BASE / 10;
-				for (base_dec_len_type j=0; j<BASE_DECIMAL_LEN; ++j) {
+				for (pow_exp_type j=0; j<BASE_DECIMAL_LEN; ++j) {
 					dec_digit = cur / dec_digit_mask;
 					assert(dec_digit < 10);
 					cur %= dec_digit_mask;
@@ -794,7 +832,7 @@ public:
 		br = b / gcd;
 		// ar * xe - br * ye = 1    | * cr
 		
-		typedef BigNum<BASE, MAX_LEN*2, 0, 1> DoubleBigNum;
+		typedef BigNum<BASE, MAX_LEN*2> DoubleBigNum;
 		DoubleBigNum ad = ar, bd = br, cd = cr;
 		DoubleBigNum xd = xe, yd = ye;
 		xd *= cd;
