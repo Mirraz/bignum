@@ -49,6 +49,7 @@ public:
 	
 	// n may be > BASE
 	BigNum(operation_type n) {
+		// TODO: not efficient if always n < BASE
 		len_type i = 0;
 		while (n > 0) {
 			assert(i < MAX_LEN);
@@ -87,7 +88,6 @@ public:
 	}
 	
 	static void swap(BigNum &a, BigNum &b) {
-		// TODO: not efficient
 		BigNum tmp;
 		tmp = a; a = b; b = tmp;
 	}
