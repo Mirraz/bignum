@@ -370,14 +370,12 @@ public:
 	
 	// b may be > BASE
 	BigNum operator*(const operation_type b) const {
-		BigNum num_b(b);
-		return *this * num_b;
+		return *this * BigNum(b);
 	}
 	
 	// b may be > BASE
 	BigNum& operator *=(const operation_type b) {
-		BigNum num_b(b);
-		return *this *= num_b;
+		return *this *= BigNum(b);
 	}
 	
 	// may be result === a
@@ -729,7 +727,6 @@ public:
 		BigNum r0 = a, r1 = b;
 		BigNum s0 = 1, s1 = b;
 		BigNum t0 = 0, t1 = a - 1;
-		BigNum tmp;
 		
 		while (r0.is_even()) {
 			r0.div2_assign();
