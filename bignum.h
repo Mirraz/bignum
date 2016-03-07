@@ -693,9 +693,10 @@ public:
 			r.digits[r.len-1] = r_leading;
 		}
 		
+		// TODO see div_find_digit
 		BigNum m, m_sq;
 		while (l + 1 < r) {
-			m = (r + l) / 2;
+			m = (r + l).div2();
 			m_sq = m * m;
 			if (m_sq < n) {
 				l = m;
