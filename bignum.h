@@ -265,13 +265,13 @@ public:
 		return true;
 	}
 	
-	BigNum operator+(const BigNum &b) const {
-		BigNum result;
+	// may be result === a
+	static void add_static(BigNum &result, const BigNum &a, const BigNum &b) {
 		operation_type overflow = 0;
 		operation_type summ;
 		len_type i;
-		for (i = 0; i<len && i<b.len; ++i) {
-			summ = (operation_type)digits[i] + (operation_type)b.digits[i] + overflow;
+		for (i = 0; i<a.len && i<b.len; ++i) {
+			summ = (operation_type)a.digits[i] + (operation_type)b.digits[i] + overflow;
 			if (summ < BASE) {overflow = 0;}
 			else {summ -= BASE; overflow = 1;}
 			result.digits[i] = summ;
@@ -282,41 +282,42 @@ public:
 			else {summ -= BASE; overflow = 1;}
 			result.digits[i] = summ;
 		}
-		for (; i<len && overflow > 0; ++i) {
-			summ = (operation_type)digits[i] + overflow;
+		for (; i<a.len && overflow > 0; ++i) {
+			summ = (operation_type)a.digits[i] + overflow;
 			if (summ < BASE) {overflow = 0;}
 			else {summ -= BASE; overflow = 1;}
 			result.digits[i] = summ;
 		}
 		if (overflow == 0) {
-			for (; i<len; ++i) {
-				result.digits[i] = digits[i];
+			for (; i<a.len; ++i) {
+				result.digits[i] = a.digits[i];
 			}
 		} else {
 			assert(i < MAX_LEN);
 			result.digits[i++] = overflow;
 		}
 		result.len = i;
+	}
+	
+	BigNum operator+(const BigNum &b) const {
+		BigNum result;
+		add_static(result, *this, b);
 		return result;
 	}
 	
-	// b may be > BASE
-	BigNum operator+(const operation_type b) const {
-		BigNum num_b(b);
-		return *this + num_b;
-	}
-	
 	BigNum& operator +=(const BigNum &b) {
-		// TODO: not efficient
-		BigNum result = (*this) + b;
-		(*this) = result;
+		add_static(*this, *this, b);
 		return *this;
 	}
 	
 	// b may be > BASE
+	BigNum operator+(const operation_type b) const {
+		return *this + BigNum(b);
+	}
+	
+	// b may be > BASE
 	BigNum& operator +=(const operation_type b) {
-		BigNum num_b(b);
-		return *this += num_b;
+		return *this += BigNum(b);
 	}
 	
 	// self += b * BASE^exp * coef
@@ -361,17 +362,16 @@ public:
 		return result;
 	}
 	
+	BigNum& operator *=(const BigNum &b) {
+		BigNum result = (*this) * b;
+		(*this) = result;
+		return *this;
+	}
+	
 	// b may be > BASE
 	BigNum operator*(const operation_type b) const {
 		BigNum num_b(b);
 		return *this * num_b;
-	}
-	
-	BigNum& operator *=(const BigNum &b) {
-		// TODO: not efficient
-		BigNum result = (*this) * b;
-		(*this) = result;
-		return *this;
 	}
 	
 	// b may be > BASE
@@ -380,88 +380,96 @@ public:
 		return *this *= num_b;
 	}
 	
-	BigNum operator-(const BigNum &b) const {
-		assert(b.len <= len);
-		if (len == 0) return 0;
-		BigNum result;
+	// may be result === a
+	static void sub_static(BigNum &result, const BigNum &a, const BigNum &b) {
+		assert(b.len <= a.len);
+		if (a.len == 0) {result.len = 0; return;}
 		operation_type carry = 0;
 		operation_type subtr, res;
 		len_type i, j = 0;
 		for (i=0; i<b.len; ++i) {
 			subtr = (operation_type)b.digits[i] + carry;
-			if ((operation_type)digits[i] >= subtr) {
-				res = (operation_type)digits[i] - subtr;
+			if ((operation_type)a.digits[i] >= subtr) {
+				res = (operation_type)a.digits[i] - subtr;
 				carry = 0;
 			} else {
-				res = (operation_type)digits[i] + (BASE - subtr);
+				res = (operation_type)a.digits[i] + (BASE - subtr);
 				carry = 1;
 			}
 			if (res > 0) j = i + 1;
 			result.digits[i] = res;
 		}
-		for (; i<len && carry > 0; ++i) {
-			if ((operation_type)digits[i] >= carry) {
-				res = (operation_type)digits[i] - carry;
+		for (; i<a.len && carry > 0; ++i) {
+			if ((operation_type)a.digits[i] >= carry) {
+				res = (operation_type)a.digits[i] - carry;
 				carry = 0;
 				if (res > 0) j = i + 1;
 			} else {
-				res = (operation_type)digits[i] + (BASE - carry);
+				res = (operation_type)a.digits[i] + (BASE - carry);
 				carry = 1;
 				j = i + 1;
 			}
 			result.digits[i] = res;
 		}
-		if (i < len) {
-			for (; i<len; ++i) {
-				result.digits[i] = digits[i];
+		if (i < a.len) {
+			for (; i<a.len; ++i) {
+				result.digits[i] = a.digits[i];
 			}
-			j = len;
+			j = a.len;
 		}
 		assert(carry == 0);
 		assert(i > 0);
 		result.len = j;
+	}
+	
+	BigNum operator-(const BigNum &b) const {
+		BigNum result;
+		sub_static(result, *this, b);
 		return result;
 	}
 	
-	// b may be > BASE
-	BigNum operator-(const operation_type b) const {
-		BigNum num_b(b);
-		return *this - num_b;
-	}
-	
 	BigNum& operator -=(const BigNum &b) {
-		// TODO: not efficient
-		BigNum result = (*this) - b;
-		(*this) = result;
+		sub_static(*this, *this, b);
 		return *this;
 	}
 	
 	// b may be > BASE
-	BigNum& operator -=(const operation_type b) {
-		BigNum num_b(b);
-		return *this -= num_b;
+	BigNum operator-(const operation_type b) const {
+		return *this - BigNum(b);
 	}
 	
-	BigNum div(const digit_type b, digit_type *remaind) const {
+	// b may be > BASE
+	BigNum& operator -=(const operation_type b) {
+		return *this -= BigNum(b);
+	}
+	
+	// may be result === a
+	static void div_static(BigNum &result, const BigNum &a, const digit_type b, digit_type *remaind) {
 		assert(b < BASE);
 		assert(b > 0);
-		if (len == 0) {
+		if (a.len == 0) {
 			*remaind = 0;
-			return 0;
+			result.len = 0;
+			return;
 		}
-		BigNum result;
-		result.len = len;
-		if (digits[len-1] < b) --result.len;
+		len_type result_len = a.len;
+		if (a.digits[a.len-1] < b) --result_len;
 		operation_type carry = 0;
 		operation_type res;
-		for (len_type i=len-1;; --i) {
-			res = (operation_type)digits[i] + carry * BASE;
+		for (len_type i=a.len-1;; --i) {
+			res = (operation_type)a.digits[i] + carry * BASE;
 			carry = res % b;
 			result.digits[i] = res / b;
 			assert(result.digits[i] < BASE);
 			if (i == 0) break;
 		}
 		*remaind = carry;
+		result.len = result_len;
+	}
+	
+	BigNum div(const digit_type b, digit_type *remaind) const {
+		BigNum result;
+		div_static(result, *this, b, remaind);
 		return result;
 	}
 	
@@ -470,36 +478,40 @@ public:
 		return div(b, &remaind);
 	}
 	
-	BigNum& operator /=(const digit_type b) {
-		// TODO: not efficient
-		BigNum result = (*this) / b;
-		(*this) = result;
+	BigNum& operator/=(const digit_type b) {
+		digit_type remaind;
+		div_static(*this, *this, b, &remaind);
 		return *this;
 	}
 	
-	BigNum div2() const {
+	// may be result === a
+	static void div2_static(BigNum &result, const BigNum &a) {
 		if (!(BASE & (BASE-1))) { // BASE is power of 2
-			if (len == 0) return 0;
-			BigNum result;
+			if (a.len == 0) {result.len = 0; return;}
 			digit_type carry = 0;
 			bool next_carry;
-			for (len_type i=len-1;; --i) {
-				next_carry = digits[i] & 1;
-				result.digits[i] = carry | (digits[i] >> 1);
+			for (len_type i=a.len-1;; --i) {
+				next_carry = a.digits[i] & 1;
+				result.digits[i] = carry | (a.digits[i] >> 1);
 				carry = (next_carry ? BASE/2 : 0);
 				if (i == 0) break;
 			}
-			if (result.digits[len-1] == 0) result.len = len-1;
-			else result.len = len;
-			return result;
+			if (result.digits[a.len-1] == 0) result.len = a.len-1;
+			else result.len = a.len;
 		} else {
-			return (*this) / 2;
+			digit_type remaind;
+			div_static(result, a, 2, &remaind);
 		}
 	}
 	
+	BigNum div2() const {
+		BigNum result;
+		div2_static(result, *this);
+		return result;
+	}
+	
 	void div2_assign() {
-		// TODO: not efficient
-		(*this) = div2();
+		div2_static(*this, *this);
 	}
 	
 	static_assert(BASE % 2 == 0, "BASE is not even");
@@ -533,19 +545,20 @@ private:
 	}
 	
 public:
-	BigNum div(const BigNum &b, BigNum *remaind) const {
+	// may be result === a
+	static void div_static(BigNum &result, const BigNum &a, const BigNum &b, BigNum *remaind) {
 		assert(b.len > 0);
 		assert(b.len < MAX_LEN);
-		if (len == 0) {
-			*remaind = 0;
-			return 0;
+		if (a.len == 0) {
+			remaind->len = 0;
+			result.len = 0;
+			return;
 		}
-		BigNum result(0);
 		BigNum cur_value(0);
 		operation_type x;
 		len_type j = 0;
-		for (len_type i = len-1;; i--) {
-			cur_value.digits[0] = digits[i];
+		for (len_type i = a.len-1;; i--) {
+			cur_value.digits[0] = a.digits[i];
 			if (cur_value.len == 0 && cur_value.digits[0] > 0) cur_value.len = 1;
 			x = div_find_digit(b, cur_value);
 			if (j == 0 && x > 0) j = i + 1;
@@ -556,6 +569,11 @@ public:
 		}
 		result.len = j;
 		*remaind = cur_value;
+	}
+
+	BigNum div(const BigNum &b, BigNum *remaind) const {
+		BigNum result;
+		div_static(result, *this, b, remaind);
 		return result;
 	}
 	
@@ -565,9 +583,8 @@ public:
 	}
 	
 	BigNum& operator /=(const BigNum &b) {
-		// TODO: not efficient
-		BigNum result = (*this) / b;
-		(*this) = result;
+		BigNum remaind;
+		div_static(*this, *this, b, &remaind);
 		return *this;
 	}
 	
@@ -578,32 +595,36 @@ public:
 	}
 	
 	BigNum& operator %=(const BigNum &b) {
-		// TODO: not efficient
 		BigNum result = (*this) % b;
 		(*this) = result;
 		return *this;
 	}
 	
-	BigNum shift_left(const len_type exp) const {
-		assert(len <= len + exp); // detect overflow
-		assert(len + exp <= MAX_LEN);
-		if (exp == 0 || len == 0) return 0;
-		BigNum result;
+	// may be result === a
+	static void shift_left_static(BigNum &result, const BigNum &a, const len_type exp) {
+		assert(a.len <= a.len + exp); // detect overflow
+		assert(a.len + exp <= MAX_LEN);
+		if (a.len == 0) {result.len = 0; return;}
+		if (exp == 0) return;
 		len_type i;
-		for (i = len+exp-1; i>=exp; --i) {
-			result.digits[i] = digits[i-exp];
+		for (i = a.len+exp-1; i>=exp; --i) {
+			result.digits[i] = a.digits[i-exp];
 		}
 		for (;; --i) {
 			result.digits[i] = 0;
 			if (i == 0) break;
 		}
-		result.len = len + exp;
-		return result;
+		result.len = a.len + exp;
+	}
+	
+	BigNum shift_left(const len_type exp) const {
+		BigNum result;
+		shift_left_static(result, *this, exp);
+		return shift_left;
 	}
 	
 	void shift_left_assign(const len_type exp) {
-		// TODO: not efficient
-		(*this) = shift_left(exp);
+		shift_left_static(*this, *this, exp);
 	}
 	
 	BigNum pow(const len_type exp) const {
@@ -623,6 +644,10 @@ public:
 			mask >>= 1;
 		}
 		return result;
+	}
+	
+	void pow_assign(const len_type exp) {
+		(*this) = pow(exp);
 	}
 	
 	static BigNum min(const BigNum &a, const BigNum &b) {
