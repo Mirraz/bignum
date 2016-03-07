@@ -527,13 +527,11 @@ public:
 private:
 	// find max x: b * x <= cur_value
 	static digit_type div_find_digit(const BigNum &b, const BigNum &cur_value) {
-		BigNum cur;
 		operation_type x = 0;
 		operation_type l = 0, r = BASE, m;
 		while (l <= r) {
 			m = (l + r) >> 1;
-			cur = b * m;
-			if (cur <= cur_value) {
+			if (b * m <= cur_value) {
 				x = m;
 				l = m + 1;
 			} else {
@@ -561,9 +559,9 @@ public:
 			cur_value.digits[0] = a.digits[i];
 			if (cur_value.len == 0 && cur_value.digits[0] > 0) cur_value.len = 1;
 			x = div_find_digit(b, cur_value);
+			cur_value -= b * x;
 			if (j == 0 && x > 0) j = i + 1;
 			result.digits[i] = x;
-			cur_value -= b * x;
 			if (i == 0) break;
 			cur_value.shift_left_assign(1);
 		}
