@@ -7,8 +7,8 @@
 #ifndef NDEBUG
 #  include <inttypes.h>
 #endif
-#include <memory.h>
 #include <math.h>
+#include <algorithm>
 
 typedef uint_fast16_t len_type;
 typedef uint32_t      digit_type;
@@ -89,13 +89,42 @@ public:
 		len = i;
 	}
 	
-	BigNum(const len_type b_len, const digit_type b_digits[]) {
+private:
+	void assign(const len_type b_len, const digit_type b_digits[]) {
 		assert(b_len <= MAX_LEN);
 		len = b_len;
-		memcpy(digits, b_digits, sizeof(digit_type)*b_len);
+		std::copy(b_digits, b_digits+b_len, digits);
+	}
+	
+	void assign(const BigNum &b) {
+		assign(b.len, b.digits);
+	}
+	
+public:
+	BigNum(const len_type b_len, const digit_type b_digits[]) {
+		assign(b_len, b_digits);
 	}
 	
 	BigNum(const BigNum &b) : BigNum(b.len, b.digits) {}
+	
+	BigNum(BigNum &&b) : BigNum(b.len, b.digits) {
+		b.len = 0;
+	}
+	
+	BigNum& operator=(const BigNum &b) {
+		if (this != &b) {
+			assign(b);
+		}
+		return *this;
+	}
+	
+	BigNum& operator=(BigNum &&b) {
+		if (this != &b) {
+			assign(b);
+			b.len = 0;
+		}
+		return *this;
+	}
 	
 	template<operation_type B, len_type L, bool ID, dec_len_type DL, pow_exp_type BDL>
 	BigNum<B, L, ID, DL, BDL> clone_template() const {
@@ -126,8 +155,7 @@ public:
 	}
 	
 	static void swap(BigNum &a, BigNum &b) {
-		BigNum tmp;
-		tmp = a; a = b; b = tmp;
+		BigNum tmp(a); a = b; b = tmp;
 	}
 	
 	#ifndef NDEBUG
