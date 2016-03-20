@@ -19,6 +19,7 @@ typedef uint_fast8_t  pow_exp_type;
 #define LEN_TYPE_MAX UINT_FAST16_MAX
 #define DIGIT_TYPE_MAX UINT32_MAX
 #define DEC_LEN_TYPE_MAX UINT_FAST16_MAX
+#define LEN_TYPE_MAX_MASK (((len_type)1)<<15)
 #ifndef NDEBUG
 #  define LEN_PRINT "%" PRIuFAST16
 #  define DIGIT_PRINT "%" PRIu32
@@ -688,15 +689,11 @@ public:
 		shift_left_static(*this, *this, exp);
 	}
 	
+	// on 0^0 returns 1
 	BigNum pow(const len_type exp) const {
-		assert(len > 0 || exp > 0); // forbid 0^0
 		BigNum result(1);
-		len_type mask = 1;
-		while (mask <= exp) {
-			mask <<= 1;
-			assert(mask > 0); // detect overflow
-		}
-		mask >>= 1;
+		len_type mask = LEN_TYPE_MAX_MASK;
+		while (mask != 0 && !(exp & mask)) mask >>= 1;
 		while (mask > 0) {
 			result *= result;
 			if (mask & exp) {

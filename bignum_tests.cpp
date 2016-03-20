@@ -141,7 +141,6 @@ void test_pow() {
 	BigNum<16, 16> a, b;
 	for (i=0; i<1024*64; ++i) {
 		for (j=0; j<64; ++j) {
-			if (i == 0 && j == 0) continue;
 			if (my_pow(i, j, &k)) continue;
 			a = i;
 			b = a.pow(j);
