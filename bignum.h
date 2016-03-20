@@ -342,21 +342,18 @@ public:
 			else {summ -= BASE; overflow = 1;}
 			result.digits[i] = summ;
 		}
-		for (; i<b.len; ++i) {
-			summ = (operation_type)b.digits[i] + overflow;
-			if (summ < BASE) {overflow = 0;}
-			else {summ -= BASE; overflow = 1;}
-			result.digits[i] = summ;
-		}
-		for (; i<a.len && overflow > 0; ++i) {
-			summ = (operation_type)a.digits[i] + overflow;
+		const BigNum &l = (a.len < b.len ? b : a); // longest
+		for (; i<l.len && overflow > 0; ++i) {
+			summ = (operation_type)l.digits[i] + overflow;
 			if (summ < BASE) {overflow = 0;}
 			else {summ -= BASE; overflow = 1;}
 			result.digits[i] = summ;
 		}
 		if (overflow == 0) {
-			for (; i<a.len; ++i) {
-				result.digits[i] = a.digits[i];
+			if (&result == &l) {
+				i = l.len;
+			} else {
+				for (; i<l.len; ++i) result.digits[i] = l.digits[i];
 			}
 		} else {
 			assert(i < MAX_LEN);
@@ -476,8 +473,10 @@ public:
 			result.digits[i] = res;
 		}
 		if (i < a.len) {
-			for (; i<a.len; ++i) {
-				result.digits[i] = a.digits[i];
+			if (&result == &a) {
+				i = a.len;
+			} else {
+				for (; i<a.len; ++i) result.digits[i] = a.digits[i];
 			}
 			j = a.len;
 		}
