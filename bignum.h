@@ -71,8 +71,8 @@ class BigNum {
 	static_assert(MAX_DECIMAL_LEN < DEC_LEN_TYPE_MAX, "MAX_DECIMAL_LEN is too large");
 	
 private:
-	len_type len;
 	digit_type digits[MAX_LEN];
+	len_type len;
 	
 public:
 	BigNum() : len(0) {}
