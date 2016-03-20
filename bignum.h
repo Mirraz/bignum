@@ -718,6 +718,7 @@ public:
 		return b;
 	}
 	
+	// floor(sqrt(n))
 	static BigNum square_root(const BigNum &n) {
 		assert(n.len <= MAX_LEN - 1);
 		if (n.len == 0) return 0;
@@ -755,11 +756,9 @@ public:
 			r.digits[r.len-1] = r_leading;
 		}
 		
-		// TODO see div_find_digit
-		BigNum m, m_sq;
 		while (l + 1 < r) {
-			m = (r + l).div2();
-			m_sq = m * m;
+			BigNum m((l + r).div2());
+			BigNum m_sq(m * m);
 			if (m_sq < n) {
 				l = m;
 			} else if (n < m_sq) {
