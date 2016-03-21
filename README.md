@@ -52,9 +52,9 @@
 | `min`, `min`, `swap` | min, max and swap utility methods | |
 
 ### Algorithms
-| name | description |
-| --- | --- |
-| `square_root` | finds `floor(sqrt(n))` |
-| `extended_binary_euclidean` | extended euclidean algorithm implemented by binary GCD algorithm, for now works only for not both even numbers |
-| `linear_diophantine`| solves diophantine equation `a*x - b*y = c`, for now works only for not both even `a` and `b` |
+| name | description | limitations |
+| --- | --- | --- |
+| `square_root` | finds `floor(sqrt(n))` | bignumber length <= `MAX_LEN-1` |
+| `extended_binary_euclidean` | extended euclidean algorithm implemented by binary GCD algorithm | for now works only for not both even numbers |
+| `linear_diophantine`| solves diophantine equation `a*x - b*y = c` | for now works only for not both even `a` and `b` |
 
