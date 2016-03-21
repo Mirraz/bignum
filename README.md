@@ -5,7 +5,7 @@
 | file | description |
 | --- | --- |
 | `bignum.h` | template class, uses `c++11` standard |
-| `bignum_tests.cpp` | tests and usage examples, **compile** it by `make` command |
+| `bignum_tests.cpp` | tests and usage examples, **compile** it by `mkdir build; make` |
 
 ## bignum.h template class
 
